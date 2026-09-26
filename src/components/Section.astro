@@ -1,0 +1,16 @@
+---
+// A titled band of the page: label in the margin rail, content in the main column.
+interface Props {
+  id: string;
+  label: string;
+}
+
+const { id, label } = Astro.props;
+---
+
+<section aria-labelledby={id} class="sheet border-t border-rule py-12 md:py-16">
+  <h2 id={id} class="rail text-base [font-stretch:100%] font-semibold">{label}</h2>
+  <div class="min-w-0">
+    <slot />
+  </div>
+</section>

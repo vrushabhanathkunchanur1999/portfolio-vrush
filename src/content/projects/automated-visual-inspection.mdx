@@ -1,0 +1,41 @@
+---
+title: Automated Visual Inspection
+oneLiner: Pass/fail visual inspection on an electronics manufacturing line, across 4 stations and three product variants.
+category: production
+role: Software Engineer; trained the models, built the inference service and commissioned the stations
+org: Xenvis Solutions
+period: TODO_PERIOD
+status: live
+scale: 4 stations, 1,400+ units inspected per day, 1 year in production
+problem: An electronics manufacturer needed automated pass/fail inspection of component placement, defects and seal quality across three product variants on its production line.
+outcomes:
+  - metric: Component and defect detection
+    value: 0.96 mAP@0.5
+    note: YOLOX-S and YOLOX-M on 2,500 annotated production images across 6 classes
+  - metric: Seal-anomaly recall
+    value: 96%
+    note: at 94% precision, at the deployed threshold
+  - metric: Median latency per unit
+    value: 1,200 ms
+    note: GPU-backed Flask service on CUDA 12.8, all models loaded once at startup
+  - metric: Units inspected per day
+    value: 1,400+
+    note: across 4 stations, in production for 1 year
+stack:
+  - Python
+  - PyTorch
+  - YOLOX
+  - OpenCV
+  - ONNX
+  - Flask
+  - Docker
+  - NVIDIA CUDA
+hardware:
+  - NVIDIA GPU host (CUDA 12.8)
+confidential: true
+featured: true
+order: 2
+publishedAt: 2026-09-26
+---
+
+{/* TODO: case study body is written in phase 4. */}

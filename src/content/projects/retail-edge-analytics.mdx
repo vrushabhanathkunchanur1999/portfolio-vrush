@@ -1,0 +1,54 @@
+---
+title: Retail Edge Analytics
+oneLiner: On-device store analytics on Raspberry Pi 5, with person detection, tracking and six real-time KPIs.
+category: production
+role: Software Engineer; trained the models and built the edge pipeline and data layer
+org: Xenvis Solutions
+period: Jan 2025 – present
+status: live
+scale: 400+ stores live, grown from 40+ pilots, with a 700-store rollout under contract
+problem: Store operators needed footfall, trial-room, billing-counter and greeting-zone metrics from in-store RTSP camera feeds, computed on a Raspberry Pi 5 inside each store.
+outcomes:
+  - metric: Inference latency on Raspberry Pi 5
+    value: 35% lower
+    note: after moving from ONNX Runtime at FP32 to NCNN at FP16 with a 352×352 detector input
+  - metric: Median inference per camera
+    value: 90 ms
+    note: with the Pi's four cores partitioned into dedicated NCNN pipelines
+  - metric: Footfall agreement with manual counts
+    value: 94%
+    note: after replacing naive line-crossing with an inner-boundary rule
+  - metric: Model size on Raspberry Pi 5
+    value: 45% smaller
+    note: FP16 quantisation of the detector and classifier
+  - metric: Person detection on held-out store footage
+    value: 0.90 mAP@0.5
+    note: YOLOX-S trained on 25,000 annotated store-camera frames
+  - metric: Crop classification accuracy on held-out footage
+    value: 92%
+    note: dual-head MobileNetV3-Small, demographic and customer/employee heads
+stack:
+  - Python
+  - PyTorch
+  - YOLOX
+  - MobileNetV3
+  - NCNN
+  - ONNX Runtime
+  - NumPy
+  - OpenCV
+  - Norfair
+  - ByteTrack
+  - SQLite
+  - Litestream
+  - AWS S3
+  - React
+hardware:
+  - Raspberry Pi 5 (ARM64)
+  - RTSP store cameras
+confidential: true
+featured: true
+order: 1
+publishedAt: 2026-09-26
+---
+
+{/* TODO: case study body is written in phase 4. */}

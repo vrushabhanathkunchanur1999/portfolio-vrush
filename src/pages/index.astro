@@ -1,0 +1,97 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import Section from '@/components/Section.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import { capabilities, experience, skills } from '@/lib/profile';
+import { getPublishedPosts, getSortedProjects } from '@/lib/content';
+import { site } from '@/lib/site';
+
+const featured = (await getSortedProjects()).filter((p) => p.data.featured);
+const recentPosts = (await getPublishedPosts()).slice(0, 3);
+const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' });
+---
+
+<BaseLayout
+  title="Vrushabh Kunchanur, AI Engineer"
+  description="AI engineer in Bengaluru who trains detection, classification and anomaly models and ships them to 400+ retail edge devices and 4 factory inspection stations."
+>
+  <Hero />
+
+  <Section id="work" label="Selected work">
+    <div class="grid gap-12">
+      {featured.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </Section>
+
+  <Section id="what-i-do" label="What I do">
+    <ul class="measure grid gap-3" role="list">
+      {capabilities.map((c) => <li>{c}</li>)}
+    </ul>
+  </Section>
+
+  <Section id="skills" label="Skills">
+    <dl class="grid gap-4">
+      {
+        skills.map((s) => (
+          <div class="grid gap-x-6 md:grid-cols-[12rem_minmax(0,1fr)]">
+            <dt class="font-semibold">{s.group}</dt>
+            <dd class="measure">{s.items.join(', ')}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Section>
+
+  {
+    recentPosts.length > 0 && (
+      <Section id="writing" label="Writing">
+        <ul class="grid gap-4" role="list">
+          {recentPosts.map((post) => (
+            <li class="grid gap-x-6 md:grid-cols-[8rem_minmax(0,1fr)]">
+              <time class="text-graphite tabular-nums" datetime={post.data.publishedAt.toISOString().slice(0, 10)}>
+                {dateFormat.format(post.data.publishedAt)}
+              </time>
+              <a class="font-semibold" href={`/blog/${post.id}`}>
+                {post.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <Section id="experience" label="Experience">
+    <ol class="grid gap-5" role="list">
+      {
+        experience.map((r) => (
+          <li class="grid gap-x-6 md:grid-cols-[12rem_minmax(0,1fr)]">
+            <p class="text-graphite tabular-nums">
+              <time datetime={r.start.iso}>{r.start.label}</time> to{' '}
+              {r.end ? <time datetime={r.end.iso}>{r.end.label}</time> : 'present'}
+            </p>
+            <div class="measure">
+              <p class="font-semibold">
+                {r.role}, {r.org}
+              </p>
+              <p>{r.summary}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="mt-6">
+      <a class="tap" href="/about">Full experience, education and awards</a>
+    </p>
+  </Section>
+
+  <Section id="contact" label="Contact">
+    <p class="measure">{site.availability}</p>
+    <ul class="mt-4 grid gap-1" role="list">
+      <li><a class="tap" href={`mailto:${site.email}`}>{site.email}</a></li>
+      <li><a class="tap" href={site.socials.linkedin} rel="me">LinkedIn</a></li>
+      <li><a class="tap" href={site.socials.github} rel="me">GitHub</a></li>
+    </ul>
+  </Section>
+</BaseLayout>

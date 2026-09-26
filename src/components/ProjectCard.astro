@@ -1,0 +1,69 @@
+---
+// A project as a standalone spec block: readable on its own if lifted out of the page.
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, headingLevel = 'h3' } = Astro.props;
+const { title, oneLiner, scale, outcomes, stack } = project.data;
+const Heading = headingLevel;
+const headingId = `project-${project.id}`;
+---
+
+<article aria-labelledby={headingId} class="border-t border-ink pt-5 first:border-t-0 first:pt-0">
+  <Heading id={headingId} class="text-xl font-bold [font-stretch:87.5%]">{title}</Heading>
+  <p class="measure mt-2">{oneLiner}</p>
+  <dl class="spec mt-5">
+    {
+      scale && (
+        <div>
+          <dt>Scale</dt>
+          <dd>{scale}</dd>
+        </div>
+      )
+    }
+    {
+      outcomes.slice(0, 3).map((o) => (
+        <div>
+          <dt>{o.metric}</dt>
+          <dd>
+            <span class="font-semibold tabular-nums">{o.value}</span>{o.note && <span class="text-graphite">, {o.note}</span>}
+          </dd>
+        </div>
+      ))
+    }
+    <div>
+      <dt>Stack</dt>
+      <dd>{stack.join(', ')}</dd>
+    </div>
+  </dl>
+  <p class="mt-4">
+    <a class="tap font-semibold" href={`/projects/${project.id}`}>Read the {title} case study</a>
+  </p>
+</article>
+
+<style>
+  .spec > div {
+    display: grid;
+    gap: 0 1.5rem;
+    padding-block: 0.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .spec > div:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .spec dt {
+    color: var(--graphite);
+  }
+
+  @media (min-width: 40rem) {
+    .spec > div {
+      grid-template-columns: 14rem minmax(0, 1fr);
+    }
+  }
+</style>
