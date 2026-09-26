@@ -17,7 +17,7 @@ import { site } from '@/lib/site';
         readouts.map((r, i) => (
           <li style={`--i: ${i}`}>
             <p class="readout-value">
-              {r.value}
+              {r.value}{' '}
               <span class="readout-unit">{r.unit}</span>
             </p>
             <div class="readout-scale" aria-hidden="true" />

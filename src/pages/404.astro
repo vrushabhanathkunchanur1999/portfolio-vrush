@@ -1,0 +1,24 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Page not found"
+  description="This page does not exist on Vrushabh Kunchanur's site. The home page, the production computer vision case studies and the blog articles are linked from here."
+>
+  <meta slot="head" name="robots" content="noindex" />
+  <div class="sheet py-16 md:py-24">
+    <div class="measure">
+      <h1>Page not found</h1>
+      <p class="mt-4 text-lg">
+        There is nothing at this address. If you followed a link from somewhere else, the page may
+        have moved.
+      </p>
+      <ul class="mt-8 grid gap-1" role="list">
+        <li><a class="tap" href="/">Home</a></li>
+        <li><a class="tap" href="/projects">Projects and case studies</a></li>
+        <li><a class="tap" href="/blog">Blog</a></li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

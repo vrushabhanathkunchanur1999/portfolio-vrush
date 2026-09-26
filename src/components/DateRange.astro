@@ -1,0 +1,10 @@
+---
+interface Props {
+  start: { iso: string; label: string };
+  end: { iso: string; label: string } | null;
+}
+
+const { start, end } = Astro.props;
+---
+
+<time datetime={start.iso}>{start.label}</time> to{' '}{end ? <time datetime={end.iso}>{end.label}</time> : 'present'}

@@ -1,0 +1,92 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Section from '@/components/Section.astro';
+import SkillList from '@/components/SkillList.astro';
+import Timeline from '@/components/Timeline.astro';
+import DateRange from '@/components/DateRange.astro';
+import { awards, education } from '@/lib/profile';
+import { site } from '@/lib/site';
+---
+
+<BaseLayout
+  title="About Vrushabh Kunchanur, AI Engineer in Bengaluru"
+  description="Vrushabh Kunchanur is an AI engineer in Bengaluru who ships computer vision to 400+ retail edge devices and a factory line, after 3.5 years of real-time 3D."
+>
+  <div class="sheet pt-10 md:pt-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'About', href: '/about' },
+        ]}
+      />
+      <h1 class="mt-6">About</h1>
+    </div>
+  </div>
+
+  <Section id="bio" label="Background">
+    <div class="measure grid gap-4">
+      <p class="text-lg">
+        I am an AI engineer in Bengaluru. I train detection, classification and anomaly models and
+        ship them into production on real hardware: Raspberry Pi 5 edge devices in 400+ retail
+        stores, and 4 inspection stations on an electronics manufacturing line that check 1,400+
+        units a day.
+      </p>
+      <p>
+        At Xenvis Solutions, where I have worked as a Software Engineer since January 2025, the work
+        covers the whole path: dataset creation and annotation, model training, quantisation for ARM
+        edge inference, the serving layer, and commissioning systems on site. The two systems are
+        written up as case studies:{' '}
+        <a href="/projects/retail-edge-analytics">Retail Edge Analytics</a> and{' '}
+        <a href="/projects/automated-visual-inspection">Automated Visual Inspection</a>.
+      </p>
+      <p>
+        Before that, I spent three and a half years at PwC in Bengaluru on real-time 3D and GPU
+        performance engineering, building industrial training modules in Unity, including a
+        standalone Meta Quest build. That work ran to fixed frame budgets: a sustained 60 FPS at
+        1080p, and 72 Hz within a 13.9 ms frame budget on standalone mobile XR hardware.
+      </p>
+      <p>
+        I studied Electrical and Electronics Engineering at KLE Technological University in
+        Hubballi, and graduated in 2021.
+      </p>
+      <p>
+        {site.availability} <a href="/contact">Get in touch</a>, or read the{' '}
+        <a href="/resume">full résumé</a>.
+      </p>
+    </div>
+  </Section>
+
+  <Section id="experience" label="Experience">
+    <Timeline />
+  </Section>
+
+  <Section id="skills" label="Skills">
+    <SkillList />
+  </Section>
+
+  <Section id="education" label="Education">
+    <div class="measure">
+      <p class="font-semibold">{education.degree}</p>
+      <p>{education.institution}, {education.location}</p>
+      <p class="text-graphite tabular-nums">
+        <DateRange start={education.start} end={education.end} />. {education.grade}.
+      </p>
+      <p class="mt-2">Coursework: {education.coursework.join(', ')}.</p>
+    </div>
+  </Section>
+
+  <Section id="awards" label="Awards">
+    <ul class="measure grid gap-3" role="list">
+      {
+        awards.map((a) => (
+          <li>
+            <p class="font-semibold">{a.title}</p>
+            <p>{a.detail}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+</BaseLayout>

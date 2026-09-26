@@ -1,0 +1,43 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import { site } from '@/lib/site';
+---
+
+<BaseLayout
+  title="Contact Vrushabh Kunchanur"
+  description="Contact Vrushabh Kunchanur, AI engineer in Bengaluru, about full-time roles or consulting on computer vision and edge ML deployment, by email or LinkedIn."
+>
+  <div class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Contact', href: '/contact' },
+        ]}
+      />
+      <h1 class="mt-6">Contact</h1>
+      <p class="measure mt-3 text-lg">{site.availability}</p>
+
+      <address class="mt-8 grid gap-1 not-italic">
+        <p>
+          Email: <a class="tap" href={`mailto:${site.email}`}>{site.email}</a>
+        </p>
+        <p>
+          LinkedIn: <a class="tap" href={site.socials.linkedin} rel="me">{site.name} on LinkedIn</a>
+        </p>
+        <p>
+          GitHub: <a class="tap" href={site.socials.github} rel="me">{site.name} on GitHub</a>
+        </p>
+        <p>
+          Location: {site.location.locality}, {site.location.region}, {site.location.country}
+        </p>
+      </address>
+
+      <p class="measure mt-8">
+        For background before you write, the <a href="/projects">case studies</a> describe the
+        production systems and the <a href="/resume">résumé</a> lists the full experience.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

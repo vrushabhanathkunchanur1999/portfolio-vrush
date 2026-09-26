@@ -3,7 +3,9 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
 import Section from '@/components/Section.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
-import { capabilities, experience, skills } from '@/lib/profile';
+import SkillList from '@/components/SkillList.astro';
+import Timeline from '@/components/Timeline.astro';
+import { capabilities } from '@/lib/profile';
 import { getPublishedPosts, getSortedProjects } from '@/lib/content';
 import { site } from '@/lib/site';
 
@@ -31,16 +33,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZ
   </Section>
 
   <Section id="skills" label="Skills">
-    <dl class="grid gap-4">
-      {
-        skills.map((s) => (
-          <div class="grid gap-x-6 md:grid-cols-[12rem_minmax(0,1fr)]">
-            <dt class="font-semibold">{s.group}</dt>
-            <dd class="measure">{s.items.join(', ')}</dd>
-          </div>
-        ))
-      }
-    </dl>
+    <SkillList />
   </Section>
 
   {
@@ -63,24 +56,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZ
   }
 
   <Section id="experience" label="Experience">
-    <ol class="grid gap-5" role="list">
-      {
-        experience.map((r) => (
-          <li class="grid gap-x-6 md:grid-cols-[12rem_minmax(0,1fr)]">
-            <p class="text-graphite tabular-nums">
-              <time datetime={r.start.iso}>{r.start.label}</time> to{' '}
-              {r.end ? <time datetime={r.end.iso}>{r.end.label}</time> : 'present'}
-            </p>
-            <div class="measure">
-              <p class="font-semibold">
-                {r.role}, {r.org}
-              </p>
-              <p>{r.summary}</p>
-            </div>
-          </li>
-        ))
-      }
-    </ol>
+    <Timeline />
     <p class="mt-6">
       <a class="tap" href="/about">Full experience, education and awards</a>
     </p>

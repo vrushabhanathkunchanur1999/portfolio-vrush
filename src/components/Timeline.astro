@@ -1,0 +1,36 @@
+---
+// One line per role. The résumé page renders the full highlights instead.
+import DateRange from '@/components/DateRange.astro';
+import { experience } from '@/lib/profile';
+---
+
+<ol class="grid gap-5" role="list">
+  {
+    experience.map((r) => (
+      <li class="grid gap-x-6 md:grid-cols-[12rem_minmax(0,1fr)]">
+        <p class="text-graphite tabular-nums">
+          <DateRange start={r.start} end={r.end} />
+        </p>
+        <div class="measure">
+          <p class="font-semibold">
+            {r.role}, {r.org}
+          </p>
+          <p>{r.summary}</p>
+          {r.projects && (
+            <p class="mt-1">
+              Case studies:{' '}
+              {r.projects
+                .filter((p) => p.caseStudy)
+                .map((p, i, arr) => (
+                  <>
+                    <a href={`/projects/${p.caseStudy}`}>{p.name}</a>
+                    {i < arr.length - 1 ? ', ' : ''}
+                  </>
+                ))}
+            </p>
+          )}
+        </div>
+      </li>
+    ))
+  }
+</ol>
