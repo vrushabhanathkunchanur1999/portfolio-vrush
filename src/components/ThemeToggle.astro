@@ -1,0 +1,43 @@
+---
+// Hidden without JS: the site follows the system theme and the toggle would do nothing.
+---
+
+<button
+  type="button"
+  class="theme-toggle hidden size-11 items-center justify-center text-ink"
+  aria-label="Switch colour theme"
+  aria-pressed="false"
+>
+  <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+    <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+    <path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"></path>
+  </svg>
+</button>
+
+<style>
+  :global(html.js) .theme-toggle {
+    display: inline-flex;
+  }
+</style>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  const root = document.documentElement;
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const resolved = () => root.dataset.theme ?? (media.matches ? 'dark' : 'light');
+  const sync = () => button?.setAttribute('aria-pressed', String(resolved() === 'dark'));
+
+  sync();
+  media.addEventListener('change', sync);
+  button?.addEventListener('click', () => {
+    const next = resolved() === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      // Storage unavailable; the choice lasts for this page view only.
+    }
+    sync();
+  });
+</script>

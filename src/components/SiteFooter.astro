@@ -1,0 +1,16 @@
+---
+import { site } from '@/lib/site';
+---
+
+<footer class="mt-24 border-t border-rule">
+  <div class="sheet py-8 text-graphite">
+    <address class="not-italic">
+      <p>
+        {site.name}, {site.jobTitle}, {site.location.locality}, {site.location.country}.
+      </p>
+      <p>
+        <a class="tap" href={`mailto:${site.email}`}>{site.email}</a>
+      </p>
+    </address>
+  </div>
+</footer>
