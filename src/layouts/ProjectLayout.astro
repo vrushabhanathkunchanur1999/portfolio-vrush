@@ -5,6 +5,8 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import Faq from '@/components/Faq.astro';
 import MetricsTable from '@/components/MetricsTable.astro';
 import { getPublishedPosts, getSortedProjects } from '@/lib/content';
+import { ogPath } from '@/lib/og';
+import { breadcrumbList, faqPage, projectWork, webPage } from '@/lib/schema';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -21,6 +23,21 @@ const statusLabel = {
 } as const;
 
 const updated = d.updatedAt ?? d.publishedAt;
+const path = `/projects/${project.id}`;
+const og = `project-${project.id}`;
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Projects', href: '/projects' },
+  { label: d.title, href: path },
+];
+const schema = [
+  webPage(path, d.metaTitle, d.metaDescription, 'WebPage', {
+    dateModified: updated.toISOString().slice(0, 10),
+  }),
+  breadcrumbList(path, crumbs),
+  projectWork(project, ogPath(og)),
+  ...(d.faqs ? [faqPage(path, d.faqs)] : []),
+];
 const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeZone: 'UTC' });
 
 const relatedPosts = (await getPublishedPosts()).filter(
@@ -40,16 +57,10 @@ const facts: { label: string; value: string }[] = [
 ];
 ---
 
-<BaseLayout title={d.metaTitle} description={d.metaDescription}>
+<BaseLayout title={d.metaTitle} description={d.metaDescription} og={og} schema={schema}>
   <article class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Projects', href: '/projects' },
-          { label: d.title, href: `/projects/${project.id}` },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
 
       <h1 class="mt-6">{d.title}</h1>
       <p class="measure mt-3 text-lg">{d.oneLiner}</p>

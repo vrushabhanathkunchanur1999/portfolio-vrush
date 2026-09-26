@@ -7,20 +7,26 @@ import SkillList from '@/components/SkillList.astro';
 import DateRange from '@/components/DateRange.astro';
 import { awards, education, experience, summary } from '@/lib/profile';
 import { site } from '@/lib/site';
+import { breadcrumbList, webPage } from '@/lib/schema';
+
+const title = 'Résumé: Vrushabh Kunchanur, AI Engineer';
+const description =
+  'Résumé of Vrushabh Kunchanur, AI engineer: computer vision on 400+ retail edge devices and a 4-station inspection line, plus 3.5 years of real-time 3D work.';
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Résumé', href: '/resume' },
+];
 ---
 
 <BaseLayout
-  title="Résumé: Vrushabh Kunchanur, AI Engineer"
-  description="Résumé of Vrushabh Kunchanur, AI engineer: computer vision on 400+ retail edge devices and a 4-station inspection line, plus 3.5 years of real-time 3D work."
+  title={title}
+  description={description}
+  og="resume"
+  schema={[webPage('/resume', title, description), breadcrumbList('/resume', crumbs)]}
 >
   <div class="sheet pt-10 md:pt-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Résumé', href: '/resume' },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">Résumé</h1>
       <p class="mt-3 text-lg">
         {site.name}, {site.jobTitle}, {site.location.locality}, {site.location.region},{' '}

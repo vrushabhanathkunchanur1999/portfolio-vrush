@@ -2,20 +2,26 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { site } from '@/lib/site';
+import { breadcrumbList, webPage } from '@/lib/schema';
+
+const title = 'Contact Vrushabh Kunchanur';
+const description =
+  'Contact Vrushabh Kunchanur, AI engineer in Bengaluru, about full-time roles or consulting on computer vision and edge ML deployment, by email or LinkedIn.';
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Contact', href: '/contact' },
+];
 ---
 
 <BaseLayout
-  title="Contact Vrushabh Kunchanur"
-  description="Contact Vrushabh Kunchanur, AI engineer in Bengaluru, about full-time roles or consulting on computer vision and edge ML deployment, by email or LinkedIn."
+  title={title}
+  description={description}
+  og="contact"
+  schema={[webPage('/contact', title, description, 'ContactPage'), breadcrumbList('/contact', crumbs)]}
 >
   <div class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Contact', href: '/contact' },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">Contact</h1>
       <p class="measure mt-3 text-lg">{site.availability}</p>
 

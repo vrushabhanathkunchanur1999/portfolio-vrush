@@ -4,6 +4,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
 import ProjectFilter from '@/components/ProjectFilter.astro';
 import { getSortedProjects } from '@/lib/content';
+import { breadcrumbList, webPage } from '@/lib/schema';
 
 const categories = [
   { id: 'production', label: 'Production' },
@@ -16,20 +17,25 @@ const projects = await getSortedProjects();
 const groups = categories
   .map((c) => ({ ...c, projects: projects.filter((p) => p.data.category === c.id) }))
   .filter((g) => g.projects.length > 0);
+
+const title = 'Projects: production computer vision systems';
+const description =
+  'Case studies of computer vision systems in production: on-device retail analytics in 400+ stores and a 4-station factory visual inspection line.';
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Projects', href: '/projects' },
+];
 ---
 
 <BaseLayout
-  title="Projects: production computer vision systems"
-  description="Case studies of computer vision systems in production: on-device retail analytics in 400+ stores and a 4-station factory visual inspection line."
+  title={title}
+  description={description}
+  og="projects"
+  schema={[webPage('/projects', title, description, 'CollectionPage'), breadcrumbList('/projects', crumbs)]}
 >
   <div class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Projects', href: '/projects' },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">Projects</h1>
       <p class="measure mt-3 text-lg">
         Systems I have trained, built and put into production, each written up with its

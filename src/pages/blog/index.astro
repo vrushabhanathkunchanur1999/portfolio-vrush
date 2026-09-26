@@ -3,22 +3,28 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import PostList from '@/components/PostList.astro';
 import { getPublishedPosts } from '@/lib/content';
+import { breadcrumbList, webPage } from '@/lib/schema';
 
 const posts = await getPublishedPosts();
+
+const title = 'Blog: edge inference and production computer vision';
+const description =
+  'Articles on shipping computer vision to edge devices and factory floors, drawn from production deployments: model porting, quantisation and field debugging.';
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+];
 ---
 
 <BaseLayout
-  title="Blog: edge inference and production computer vision"
-  description="Articles on shipping computer vision to edge devices and factory floors, drawn from production deployments: model porting, quantisation and field debugging."
+  title={title}
+  description={description}
+  og="blog"
+  schema={[webPage('/blog', title, description, 'CollectionPage'), breadcrumbList('/blog', crumbs)]}
 >
   <div class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Blog', href: '/blog' },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">Blog</h1>
       <p class="measure mt-3 text-lg">
         Notes from putting computer vision models into production, written so each section answers

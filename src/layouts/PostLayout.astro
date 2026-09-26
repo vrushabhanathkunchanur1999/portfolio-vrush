@@ -6,7 +6,9 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import Faq from '@/components/Faq.astro';
 import AuthorBox from '@/components/AuthorBox.astro';
 import { getPublishedPosts, getSortedProjects } from '@/lib/content';
-import { readingTime } from '@/lib/reading';
+import { countWords, readingTime } from '@/lib/reading';
+import { ogPath } from '@/lib/og';
+import { blogPosting, breadcrumbList, faqPage, webPage } from '@/lib/schema';
 import { tagHref } from '@/lib/tags';
 import { site } from '@/lib/site';
 
@@ -20,6 +22,19 @@ const d = post.data;
 const updated = d.updatedAt ?? d.publishedAt;
 const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeZone: 'UTC' });
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+const path = `/blog/${post.id}`;
+const og = `post-${post.id}`;
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: d.title, href: path },
+];
+const schema = [
+  webPage(path, d.metaTitle, d.description, 'WebPage', { dateModified: isoDate(updated) }),
+  breadcrumbList(path, crumbs),
+  blogPosting(post, countWords(post.body ?? ''), ogPath(og)),
+  ...(d.faqs ? [faqPage(path, d.faqs)] : []),
+];
 
 const sections = headings.filter((h) => h.depth === 2);
 const allPosts = await getPublishedPosts();
@@ -33,16 +48,16 @@ const relatedPosts = allPosts
   .slice(0, 3);
 ---
 
-<BaseLayout title={d.metaTitle} description={d.description}>
+<BaseLayout
+  title={d.metaTitle}
+  description={d.description}
+  og={og}
+  schema={schema}
+  article={{ publishedAt: d.publishedAt, modifiedAt: updated, tags: d.tags }}
+>
   <article class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Blog', href: '/blog' },
-          { label: d.title, href: `/blog/${post.id}` },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
 
       <h1 class="measure mt-6">{d.title}</h1>
 

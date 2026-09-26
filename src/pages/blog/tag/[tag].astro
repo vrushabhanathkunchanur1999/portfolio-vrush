@@ -5,6 +5,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import PostList from '@/components/PostList.astro';
 import { getPublishedPosts } from '@/lib/content';
 import { getTagArchives } from '@/lib/tags';
+import { breadcrumbList, webPage } from '@/lib/schema';
 
 export const getStaticPaths = (async () => {
   const archives = await getTagArchives();
@@ -16,21 +17,29 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { tag, posts } = Astro.props;
+const path = `/blog/tag/${tag}`;
+const title = `Articles tagged ${tag}`;
+// Generated rather than authored. The two wordings keep tags of roughly 4-24 characters inside
+// 140-160 characters; assertMeta in BaseLayout fails the build for anything outside that.
+const long = `Articles tagged ${tag} by Vrushabh Kunchanur, AI engineer, newest first: production computer vision and edge inference, each opening with a direct answer.`;
+const short = `Articles tagged ${tag} by Vrushabh Kunchanur: production computer vision and edge inference, newest first, each opening with a direct answer.`;
+const description = long.length <= 160 ? long : short;
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: tag, href: path },
+];
 ---
 
 <BaseLayout
-  title={`Articles tagged ${tag}`}
-  description={`All ${posts.length} articles on this site tagged ${tag}, covering production computer vision and edge inference, newest first, each with a direct answer up front.`}
+  title={title}
+  description={description}
+  og={`tag-${tag}`}
+  schema={[webPage(path, title, description, 'CollectionPage'), breadcrumbList(path, crumbs)]}
 >
   <div class="sheet py-10 md:py-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Blog', href: '/blog' },
-          { label: tag, href: `/blog/tag/${tag}` },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">Articles tagged {tag}</h1>
       <div class="mt-10">
         <PostList posts={posts} />

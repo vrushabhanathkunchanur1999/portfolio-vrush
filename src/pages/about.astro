@@ -7,20 +7,26 @@ import Timeline from '@/components/Timeline.astro';
 import DateRange from '@/components/DateRange.astro';
 import { awards, education } from '@/lib/profile';
 import { site } from '@/lib/site';
+import { breadcrumbList, webPage } from '@/lib/schema';
+
+const title = 'About Vrushabh Kunchanur, AI Engineer in Bengaluru';
+const description =
+  'Vrushabh Kunchanur is an AI engineer in Bengaluru who ships computer vision to 400+ retail edge devices and a factory line, after 3.5 years of real-time 3D.';
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/about' },
+];
 ---
 
 <BaseLayout
-  title="About Vrushabh Kunchanur, AI Engineer in Bengaluru"
-  description="Vrushabh Kunchanur is an AI engineer in Bengaluru who ships computer vision to 400+ retail edge devices and a factory line, after 3.5 years of real-time 3D."
+  title={title}
+  description={description}
+  og="about"
+  schema={[webPage('/about', title, description, 'ProfilePage'), breadcrumbList('/about', crumbs)]}
 >
   <div class="sheet pt-10 md:pt-14">
     <div>
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'About', href: '/about' },
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
       <h1 class="mt-6">About</h1>
     </div>
   </div>
