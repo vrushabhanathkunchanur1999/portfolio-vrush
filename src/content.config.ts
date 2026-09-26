@@ -47,6 +47,7 @@ const posts = defineCollection({
   // readingTime is computed at render time from the body, so it is not authored here.
   schema: z.object({
     title: z.string().min(1),
+    metaTitle: z.string().min(1).max(60),
     description: z.string().min(140).max(160),
     question: z.string().optional(),
     answer: z
@@ -57,8 +58,11 @@ const posts = defineCollection({
       }, 'answer must be 40-60 words'),
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date().optional(),
-    tags: z.array(z.string()).min(1),
+    tags: z.array(z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'tags are lowercase-hyphenated')).min(1),
     draft: z.boolean().default(false),
+    takeaways: z.array(z.string().min(1)).min(3).max(5),
+    // The specific first-hand basis for the post, shown in the author box.
+    firstHandBasis: z.string().min(1),
     faqs: z.array(faq).optional(),
     sources: z.array(z.object({ title: z.string(), url: z.url() })).optional(),
     relatedProjects: z.array(z.string()).optional(),

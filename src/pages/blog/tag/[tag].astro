@@ -1,0 +1,40 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import PostList from '@/components/PostList.astro';
+import { getPublishedPosts } from '@/lib/content';
+import { getTagArchives } from '@/lib/tags';
+
+export const getStaticPaths = (async () => {
+  const archives = await getTagArchives();
+  const posts = await getPublishedPosts();
+  return [...archives.keys()].map((tag) => ({
+    params: { tag },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}) satisfies GetStaticPaths;
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout
+  title={`Articles tagged ${tag}`}
+  description={`All ${posts.length} articles on this site tagged ${tag}, covering production computer vision and edge inference, newest first, each with a direct answer up front.`}
+>
+  <div class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Blog', href: '/blog' },
+          { label: tag, href: `/blog/tag/${tag}` },
+        ]}
+      />
+      <h1 class="mt-6">Articles tagged {tag}</h1>
+      <div class="mt-10">
+        <PostList posts={posts} />
+      </div>
+    </div>
+  </div>
+</BaseLayout>

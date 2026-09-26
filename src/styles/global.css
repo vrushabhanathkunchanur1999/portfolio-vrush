@@ -274,6 +274,34 @@
     overflow-x: auto;
     padding: 1rem;
     border: 1px solid var(--rule);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  /* Markdown tables: scroll inside their own box on narrow screens instead of widening the page. */
+  .prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.5rem 1rem 0.5rem 0;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+    min-width: 8rem;
+  }
+
+  .prose thead th {
+    font-weight: 600;
+    border-bottom-color: var(--ink);
+  }
+
+  .prose td code {
+    overflow-wrap: anywhere;
   }
 
   /* Tap targets at least 44px tall. */
@@ -282,6 +310,21 @@
     align-items: center;
     min-height: 44px;
   }
+}
+
+/* Shiki renders both themes; the dark colours apply wherever the dark tokens apply. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

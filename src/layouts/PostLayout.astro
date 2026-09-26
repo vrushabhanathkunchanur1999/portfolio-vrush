@@ -1,0 +1,146 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Faq from '@/components/Faq.astro';
+import AuthorBox from '@/components/AuthorBox.astro';
+import { getPublishedPosts, getSortedProjects } from '@/lib/content';
+import { readingTime } from '@/lib/reading';
+import { tagHref } from '@/lib/tags';
+import { site } from '@/lib/site';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  headings: MarkdownHeading[];
+}
+
+const { post, headings } = Astro.props;
+const d = post.data;
+const updated = d.updatedAt ?? d.publishedAt;
+const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeZone: 'UTC' });
+const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+
+const sections = headings.filter((h) => h.depth === 2);
+const allPosts = await getPublishedPosts();
+const tagLinks = await Promise.all(d.tags.map(async (t) => ({ tag: t, href: await tagHref(t) })));
+
+const relatedProjects = (await getSortedProjects()).filter(
+  (p) => d.relatedProjects?.includes(p.id) || p.data.relatedPosts?.includes(post.id),
+);
+const relatedPosts = allPosts
+  .filter((p) => p.id !== post.id && p.data.tags.some((t) => d.tags.includes(t)))
+  .slice(0, 3);
+---
+
+<BaseLayout title={d.metaTitle} description={d.description}>
+  <article class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Blog', href: '/blog' },
+          { label: d.title, href: `/blog/${post.id}` },
+        ]}
+      />
+
+      <h1 class="measure mt-6">{d.title}</h1>
+
+      <p class="mt-4 text-graphite">
+        By <a href="/about" rel="author">{site.name}</a>.{' '}
+        Published <time datetime={isoDate(d.publishedAt)}>{dateFormat.format(d.publishedAt)}</time>,{' '}
+        last updated <time datetime={isoDate(updated)}>{dateFormat.format(updated)}</time>.{' '}
+        {readingTime(post.body ?? '')} minute read.
+      </p>
+
+      <div class="answer measure mt-8 border-y border-ink py-5">
+        <p class="text-lg">{d.answer}</p>
+      </div>
+
+      {
+        sections.length >= 4 && (
+          <nav aria-labelledby="toc" class="measure mt-8">
+            <h2 id="toc" class="text-lg [font-stretch:100%]">In this article</h2>
+            <ol class="mt-2 grid list-decimal gap-1 pl-6">
+              {sections.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+
+      <div class="prose mt-4">
+        <slot />
+      </div>
+
+      <section aria-labelledby="takeaways" class="measure mt-12">
+        <h2 id="takeaways">Key takeaways</h2>
+        <ul class="mt-4 grid list-disc gap-2 pl-6">
+          {d.takeaways.map((t) => <li>{t}</li>)}
+        </ul>
+      </section>
+
+      {
+        d.faqs && (
+          <div class="measure mt-12">
+            <Faq faqs={d.faqs} />
+          </div>
+        )
+      }
+
+      {
+        d.sources && (
+          <section aria-labelledby="sources" class="measure mt-12">
+            <h2 id="sources">Sources</h2>
+            <ul class="mt-4 grid list-disc gap-1 pl-6">
+              {d.sources.map((s) => (
+                <li>
+                  <a href={s.url}>{s.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <div class="measure mt-12">
+        <AuthorBox basis={d.firstHandBasis} />
+      </div>
+
+      <section aria-labelledby="related" class="measure mt-12 border-t border-rule pt-8">
+        <h2 id="related" class="text-lg [font-stretch:100%]">Related</h2>
+        <ul class="mt-3 grid gap-1" role="list">
+          {
+            relatedProjects.map((p) => (
+              <li>
+                <a class="tap" href={`/projects/${p.id}`}>{p.data.title} case study</a>
+              </li>
+            ))
+          }
+          {
+            relatedPosts.map((p) => (
+              <li>
+                <a class="tap" href={`/blog/${p.id}`}>{p.data.title}</a>
+              </li>
+            ))
+          }
+          <li><a class="tap" href="/blog">All articles</a></li>
+        </ul>
+        <p class="mt-4 text-graphite">
+          Tagged{' '}
+          {
+            tagLinks.map((t, i) => (
+              <>
+                {t.href ? <a href={t.href}>{t.tag}</a> : <span>{t.tag}</span>}
+                {i < tagLinks.length - 1 ? ', ' : '.'}
+              </>
+            ))
+          }
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>

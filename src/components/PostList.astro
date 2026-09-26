@@ -1,0 +1,28 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: CollectionEntry<'posts'>[];
+}
+
+const { posts } = Astro.props;
+const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' });
+---
+
+<ol class="grid gap-8" role="list">
+  {
+    posts.map((post) => (
+      <li class="grid gap-x-6 md:grid-cols-[8rem_minmax(0,1fr)]">
+        <time class="text-graphite tabular-nums" datetime={post.data.publishedAt.toISOString().slice(0, 10)}>
+          {dateFormat.format(post.data.publishedAt)}
+        </time>
+        <article class="measure">
+          <h2 class="text-xl">
+            <a href={`/blog/${post.id}`}>{post.data.title}</a>
+          </h2>
+          <p class="mt-2">{post.data.description}</p>
+        </article>
+      </li>
+    ))
+  }
+</ol>

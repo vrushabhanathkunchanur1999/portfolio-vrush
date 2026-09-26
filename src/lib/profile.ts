@@ -1,6 +1,9 @@
 // Career facts shown on the landing and about pages. Numbers here are the site's most
 // quoted facts: keep them identical to the résumé PDF.
 
+// Years since Sep 2021. Update each September; the hero readout and author box both use it.
+export const yearsOfExperience = 5;
+
 export interface Readout {
   value: string;
   unit: string;
@@ -21,7 +24,7 @@ export const readouts: Readout[] = [
       'Units inspected per day by 4 manufacturing inspection stations I built and commissioned, in production for 1 year.',
   },
   {
-    value: '5',
+    value: String(yearsOfExperience),
     unit: 'years',
     caption:
       'Of professional engineering since September 2021, including 3.5 years of real-time 3D and GPU performance work at PwC.',

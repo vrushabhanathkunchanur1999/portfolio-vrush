@@ -1,0 +1,154 @@
+---
+title: Why your ONNX model gets slower on a Raspberry Pi, and what to do about it
+metaTitle: Why ONNX models get slower on a Raspberry Pi
+description: An ONNX model that is fast on a laptop often slows down on a Raspberry Pi. Runtime, precision, input size and Python glue code all cost time. What to change.
+question: why is my onnx model slow on raspberry pi
+answer: On a Raspberry Pi, latency comes from the inference runtime, the numeric precision, the input resolution and the Python code around the model, not only the model itself. In a production retail deployment on Raspberry Pi 5, moving to NCNN at FP16 with a 352×352 input and NumPy pre- and post-processing cut inference latency by 35%.
+publishedAt: 2026-09-26
+tags:
+  - edge-inference
+  - raspberry-pi
+  - onnx
+  - ncnn
+  - quantization
+relatedProjects:
+  - retail-edge-analytics
+takeaways:
+  - Time pre-processing, inference and post-processing separately on the device before changing the model.
+  - Input resolution sets a detector's per-frame compute; parameter count does not.
+  - FP16 halves weight storage, but its effect on speed depends on the runtime and the CPU, so measure latency separately from size.
+  - Reimplementing pre- and post-processing in NumPy removes the training framework from the device, but every step has to match the training code exactly.
+  - Verify a port against FP32 reference outputs at the tensor, box and metric level, because a broken port can run without raising any error.
+firstHandBasis: The measurements marked "From my deployment" come from Raspberry Pi 5 devices running a production multi-camera retail analytics system in 400+ stores.
+faqs:
+  - q: Should I use ONNX Runtime or NCNN on a Raspberry Pi 5?
+    a: Benchmark both with your own model on the device. In a production deployment on Raspberry Pi 5, moving to NCNN at FP16 with a 352×352 input cut latency by 35%, but that figure combines four changes shipped together, so it does not isolate the runtime.
+  - q: Does FP16 reduce detection accuracy?
+    a: FP16 changes numeric precision, so outputs differ slightly from FP32. In the deployment described here, the FP16 NCNN detector was checked against FP32 reference outputs and matched them after a decode fix. Always compare against an FP32 reference on real frames.
+  - q: What input size should a YOLOX model use on a Raspberry Pi?
+    a: Use the smallest multiple of 32 that still detects your smallest objects reliably on real footage. A 352×352 input has about 30% of the pixels of the standard 640×640 YOLOX-S evaluation size, and 2,541 candidate predictions instead of 8,400.
+sources:
+  - title: BCM2712 processor documentation, Raspberry Pi
+    url: https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/computers/processors/bcm2712.adoc
+  - title: NCNN, Tencent
+    url: https://github.com/Tencent/ncnn
+  - title: Thread management, ONNX Runtime documentation
+    url: https://onnxruntime.ai/docs/performance/tune-performance/threading.html
+  - title: 'YOLOX: Exceeding YOLO Series in 2021 (Ge et al., 2021)'
+    url: https://arxiv.org/abs/2107.08430
+  - title: YOLOX reference implementation, Megvii
+    url: https://github.com/Megvii-BaseDetection/YOLOX
+---
+
+import FirstHand from '@/components/FirstHand.astro';
+
+## Why does an ONNX model run slower on a Raspberry Pi than on a laptop?
+
+A Raspberry Pi 5 runs CPU inference on four Arm Cortex-A76 cores at up to 2.4 GHz, so costs that a laptop hides show up directly in latency. The model is rarely the only cost. The inference runtime, the numeric precision, the input resolution and the Python code that prepares frames and decodes outputs all compete for the same four cores.
+
+Before changing the model, time the three stages separately on the device: pre-processing, inference and post-processing. A slow port is often slow in the code around the model rather than in the model itself.
+
+## Is NCNN faster than ONNX Runtime on a Raspberry Pi?
+
+NCNN was faster in my deployment, but I cannot give a clean head-to-head number, because the runtime change shipped together with FP16, a smaller input size and new NumPy pre- and post-processing. The combined change cut inference latency by 35% on Raspberry Pi 5. Benchmark both runtimes with your own model, on the device, before choosing one.
+
+NCNN is Tencent's neural network inference framework, described by its maintainers as optimised for mobile, embedded and desktop deployment. ONNX Runtime (ONNX is the Open Neural Network Exchange model format) is Microsoft's cross-platform runtime. The two differ in format and defaults:
+
+| Property | ONNX Runtime | NCNN |
+| --- | --- | --- |
+| Model format | One `.onnx` file | A `.param` graph file and a `.bin` weights file |
+| Conversion | Exported directly from PyTorch | Converted from PyTorch or ONNX with NCNN's PNNX tool |
+| FP16 | The model is converted to float16 ahead of time; CPU kernel coverage depends on the operator and build | `use_fp16_storage` and `use_fp16_arithmetic` options, both on by default |
+| Default threads | One intra-op thread per physical core, per session | One thread per physical big core, per network |
+
+<FirstHand>
+
+On Raspberry Pi 5, moving both models from ONNX Runtime at FP32 to NCNN at FP16, with the detector re-exported at 352×352 and pre- and post-processing reimplemented in NumPy, cut inference latency by 35% and model size by 45%. The change also removed the PyTorch runtime from the device. The four changes shipped together, so the 35% is not a measurement of the runtime alone. The full system is described in the [Retail Edge Analytics case study](/projects/retail-edge-analytics).
+
+</FirstHand>
+
+## Does FP16 quantisation help on a Raspberry Pi 5?
+
+FP16, 16-bit floating point, halves the storage for every weight from 4 bytes to 2. In my deployment, the detector and classifier were 45% smaller after conversion. Whether FP16 also makes inference faster depends on whether the runtime actually computes in FP16 on your CPU, so measure latency separately from size.
+
+| Property | FP32 | FP16 |
+| --- | --- | --- |
+| Bytes per weight | 4 | 2 |
+| Model size in my deployment | Baseline | 45% smaller |
+| Accuracy check | Reference outputs | Compared against FP32 reference outputs on the same frames |
+
+FP16 is a precision change, not INT8 quantisation. INT8 needs calibration data and usually a larger accuracy check. FP16 is a smaller step, but FP16 output still has to be checked against the FP32 model, as the parity section below describes.
+
+## Why does input resolution matter more than parameter count?
+
+A convolutional detector's compute grows roughly in proportion to the number of input pixels, while its parameter count stays the same at any input size. Parameter count tells you the size of the model on disk, not the work it does per frame.
+
+The numbers for YOLOX, a single-stage object detector, make the point. The standard YOLOX-S evaluation size is 640×640, or 409,600 pixels. A 352×352 input has 123,904 pixels, about 30% as many. YOLOX predicts at strides of 8, 16 and 32 pixels, so the input side must be a multiple of 32: 352 is 11 × 32.
+
+The stride grid also sets the number of candidate boxes that post-processing has to handle. At 640×640 the three grids are 80×80, 40×40 and 20×20, which gives 8,400 candidates. At 352×352 they are 44×44, 22×22 and 11×11, which gives 2,541. Fewer candidates make decoding and NMS (non-maximum suppression) cheaper as well.
+
+A smaller input is not free. Small and distant objects lose pixels first, so validate detection quality on footage from the real cameras at the new size before shipping it.
+
+## Why reimplement pre- and post-processing outside the framework?
+
+Reference pre- and post-processing code often imports the training framework. The YOLOX reference post-processing, for example, uses PyTorch and torchvision's NMS, which puts the PyTorch runtime on the device just to decode boxes. Reimplementing those steps in NumPy removed PyTorch from my deployment.
+
+Each step has to match the training code exactly:
+
+1. **Letterbox resize.** The YOLOX reference pads the resized image at the top left with the value 114. A centred letterbox is fine, but the padding offset must then be subtracted when boxes are mapped back to the original frame.
+2. **Focus stem.** YOLOX's Focus layer moves each 2×2 pixel block into channels, turning 3 channels into 12 at half the width and height. The channel order is top-left, bottom-left, top-right, bottom-right. Any other order still runs, and gives wrong detections.
+3. **Grid decode.** The head predicts box centres as offsets within grid cells and sizes in log space, relative to the stride.
+4. **NMS.** Duplicate boxes for the same object are removed by keeping the highest-scoring box and discarding overlaps above an IoU (intersection over union) threshold.
+
+The grid decode is short and easy to get silently wrong. Here is an illustrative NumPy version, following the reference decode, not the production code:
+
+```python
+import numpy as np
+
+def decode_yolox(raw: np.ndarray, input_size: int = 352, strides=(8, 16, 32)) -> np.ndarray:
+    """raw: (N, 5 + num_classes) head output for one image, strides concatenated in order."""
+    grids, scales = [], []
+    for s in strides:
+        n = input_size // s
+        ys, xs = np.meshgrid(np.arange(n), np.arange(n), indexing="ij")
+        grids.append(np.stack((xs, ys), axis=-1).reshape(-1, 2))
+        scales.append(np.full((n * n, 1), s))
+    grid = np.concatenate(grids).astype(np.float32)
+    scale = np.concatenate(scales).astype(np.float32)
+    out = raw.copy()
+    out[:, :2] = (raw[:, :2] + grid) * scale  # box centre, in input pixels
+    out[:, 2:4] = np.exp(raw[:, 2:4]) * scale  # box width and height, in input pixels
+    return out
+```
+
+In a standard YOLOX export, objectness and class scores already come out of the head with a sigmoid applied, so only the box columns need decoding.
+
+## How do you verify numerical parity after a port?
+
+Run the original FP32 model and the ported model on the same fixed set of frames, then compare outputs at three levels: raw tensors, decoded boxes and the downstream metric. A port can run without a single error and still be wrong, so "it runs" is not a test.
+
+<FirstHand>
+
+After the move to NCNN, the detector received the wrong input tensor and every detected box decoded to roughly one pixel. Nothing raised an error. Three KPIs (key performance indicators) stopped producing meaningful values while the pipeline kept running. The fix was to rebuild the decode path and verify box geometry against FP32 reference outputs, which restored parity with the FP32 baseline.
+
+</FirstHand>
+
+A parity check that would catch that class of failure has five steps:
+
+1. **Freeze a frame set.** Use real frames from the target cameras, including the hard cases: backlight, crowds, small objects.
+2. **Compare the input tensor.** Check shape, channel order and value range after pre-processing, before the model sees anything.
+3. **Compare raw outputs.** Expect small FP16 differences, not structural ones. A large maximum absolute difference points to a pre-processing or export problem, not to precision.
+4. **Compare decoded boxes.** Match boxes between the two models by IoU, and compare the distributions of box width and height. Boxes collapsing to a few pixels show up immediately.
+5. **Compare the metric.** Run both versions on recorded footage and compare the counts or KPIs that the product actually reports.
+
+## How should inference use the Raspberry Pi 5's four cores?
+
+Give each inference pipeline a fixed share of the four cores instead of letting every session default to all of them. ONNX Runtime starts one intra-op thread per physical core for every session by default, and NCNN uses one thread per physical big core for every network, so several models on one Pi compete for the same cores.
+
+In NCNN, the thread count is set per network with `opt.num_threads`. In ONNX Runtime, it is set per session with `intra_op_num_threads`.
+
+<FirstHand>
+
+Running detection and classification once per RTSP (Real-Time Streaming Protocol) camera feed, sharing the results across every KPI on that camera, and partitioning the Pi's four cores into dedicated NCNN pipelines eliminated periodic 2× loop-latency spikes. The Pi holds 90 ms median inference per camera.
+
+</FirstHand>

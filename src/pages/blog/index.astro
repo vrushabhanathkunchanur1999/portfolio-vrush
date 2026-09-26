@@ -1,0 +1,33 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import PostList from '@/components/PostList.astro';
+import { getPublishedPosts } from '@/lib/content';
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout
+  title="Blog: edge inference and production computer vision"
+  description="Articles on shipping computer vision to edge devices and factory floors, drawn from production deployments: model porting, quantisation and field debugging."
+>
+  <div class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Blog', href: '/blog' },
+        ]}
+      />
+      <h1 class="mt-6">Blog</h1>
+      <p class="measure mt-3 text-lg">
+        Notes from putting computer vision models into production, written so each section answers
+        one question on its own.
+      </p>
+      <p class="mt-2"><a class="tap" href="/rss.xml">Subscribe with RSS</a></p>
+      <div class="mt-10">
+        <PostList posts={posts} />
+      </div>
+    </div>
+  </div>
+</BaseLayout>

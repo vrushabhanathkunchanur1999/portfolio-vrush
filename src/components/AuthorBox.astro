@@ -1,0 +1,19 @@
+---
+import { yearsOfExperience } from '@/lib/profile';
+import { site } from '@/lib/site';
+
+interface Props {
+  basis: string;
+}
+
+const { basis } = Astro.props;
+---
+
+<section aria-labelledby="author" class="border-t border-ink pt-6">
+  <h2 id="author" class="text-lg [font-stretch:100%]">About the author</h2>
+  <p class="mt-2">
+    <a href="/about" rel="author">{site.name}</a> is an {site.jobTitle} with {yearsOfExperience} years of professional
+    experience, who trains computer vision models and ships them to edge devices and factory floors.
+  </p>
+  <p class="mt-2 text-graphite">{basis}</p>
+</section>
