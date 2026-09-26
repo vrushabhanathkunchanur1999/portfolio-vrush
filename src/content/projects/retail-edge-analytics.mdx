@@ -1,5 +1,7 @@
 ---
 title: Retail Edge Analytics
+metaTitle: 'Retail Edge Analytics on Raspberry Pi 5: case study'
+metaDescription: How a YOLOX-S detector and a MobileNetV3 classifier run six real-time store KPIs on Raspberry Pi 5 in 400+ stores, at 90 ms median inference per camera.
 oneLiner: On-device store analytics on Raspberry Pi 5, with person detection, tracking and six real-time KPIs.
 category: production
 role: Software Engineer; trained the models and built the edge pipeline and data layer
@@ -48,7 +50,80 @@ hardware:
 confidential: true
 featured: true
 order: 1
+lessons:
+  - 'TODO: what you would do differently on this project, in your own words.'
+faqs:
+  - q: What hardware does Retail Edge Analytics run on?
+    a: Each store runs the full analytics pipeline on one Raspberry Pi 5, an ARM64 board. Detection and classification run in NCNN at FP16, with the Pi's four cores partitioned into dedicated inference pipelines, holding 90 ms median inference per camera.
+  - q: How accurate is the footfall count?
+    a: Footfall entry and exit counts reach 94% agreement with manual counts. That figure came after naive line-crossing was replaced with a config-derived inner-boundary rule, resolution-relative gate buffers and union-find group clustering.
+  - q: Why move from ONNX Runtime to NCNN on the Raspberry Pi 5?
+    a: Moving both models from ONNX Runtime at FP32 to NCNN at FP16, with the detector re-exported at 352×352, cut inference latency by 35% and model size by 45% on the Raspberry Pi 5. Reimplementing pre- and post-processing in NumPy also removed the PyTorch runtime from the device.
+  - q: How are store employees kept out of customer counts?
+    a: The crop classifier has a customer/employee head. A tracked person is excluded as an employee only after sustained high-confidence employee predictions, because simple majority voting over noisy predictions discarded about 18% of genuine entrants.
 publishedAt: 2026-09-26
 ---
 
-{/* TODO: case study body is written in phase 4. */}
+## Context
+
+Store operators wanted to know how many people came in, how they moved, and how trial rooms, billing counters and greeting zones were used, measured from the store's own camera feeds. Retail Edge Analytics computes six KPIs (key performance indicators) on a Raspberry Pi 5 inside each store. The system started as 40+ pilot deployments, is live in 400+ stores, and has a 700-store rollout under contract.
+
+The six KPIs are footfall entry and exit, passerby counts, trial-room usage, billing-counter activity, greeting-zone activity, and movement heatmaps. A cron job syncs store sales data so that footfall can be turned into conversion metrics.
+
+## Constraints
+
+Each store runs the whole pipeline on one Raspberry Pi 5, an ARM64 board with four CPU cores, reading several RTSP (Real-Time Streaming Protocol) camera feeds at once. The models had to be small and quantised, and the final deployment runs without the PyTorch runtime, so every pre- and post-processing step had to work outside the training framework.
+
+Store cameras see backlit doorways, people on the far side of glass shopfronts, people lingering at the threshold, and staff walking through the same zones as customers. Each of those situations produced wrong counts until the pipeline had a specific rule for it.
+
+With 400+ devices in the field, the data on each device has to survive a device failure, and the connectivity of every device has to be visible centrally.
+
+## What I built
+
+The pipeline for each camera runs these stages in order:
+
+1. **Frame input.** One RTSP feed per camera.
+2. **Pre-processing in NumPy.** A centred letterbox resize to 352×352, then the space-to-depth Focus stem that YOLOX expects at its input.
+3. **Person detection.** A YOLOX-S detector trained on 25,000 annotated store-camera frames, running in NCNN (Tencent's neural network inference framework for ARM and mobile CPUs) at FP16, meaning 16-bit floating point. The detector reaches 0.90 mAP@0.5 (mean average precision at 0.5 intersection over union) on held-out store footage.
+4. **Post-processing in NumPy.** Raw-head grid decode, then NMS (non-maximum suppression) to remove duplicate boxes.
+5. **Tracking.** Norfair and ByteTrack multi-object tracking assign each person a persistent track.
+6. **Crop classification.** A MobileNetV3-Small classifier with two heads, one demographic and one customer/employee, reaching 92% accuracy on held-out footage.
+7. **KPIs.** Six KPI modules read the shared detections, tracks and classifications for that camera.
+
+Detection and classification run once per RTSP feed, and every KPI on that camera reuses the results. Movement heatmaps add to each cell of a normalised grid at most once per track.
+
+The data and operations layer stores KPIs in daily partitioned SQLite databases with retention, replicated continuously to AWS S3 by Litestream. Host-level connectivity heartbeats feed fleet monitoring. Store staff draw camera zones in a browser zone-annotation tool and read results in a React dashboard.
+
+## Hard problems
+
+### The NCNN port that turned every box into one pixel
+
+After the move to NCNN, the detector received the wrong input tensor, and every detected box decoded to roughly one pixel. Nothing raised an error. The pipeline kept running while three KPIs stopped producing meaningful values.
+
+The fix was to rebuild the decode path and verify box geometry against FP32 reference outputs, which restored parity with the FP32 baseline.
+
+### Periodic 2× latency spikes on a four-core Pi
+
+The processing loop showed periodic spikes to twice its normal latency. Two architectural changes removed them. Detection and classification now run once per RTSP feed, with results shared across every KPI on that camera, and the Pi's four cores are partitioned into dedicated NCNN pipelines.
+
+With both changes in place, the Pi holds 90 ms median inference per camera without the periodic spikes.
+
+### Footfall counts that trusted a single line
+
+Naive line-crossing counted people seen through the glass shopfront and people lingering at the threshold as entries. The replacement uses an inner-boundary rule derived from each camera's zone config, gate buffers sized relative to frame resolution, and union-find clustering of tracks into groups.
+
+Footfall counts now reach 94% agreement with manual counts.
+
+### A demographic head that predicted 39% male against 75% actual
+
+Manual audits of 451 people across five observation windows showed a systematic bias: the raw demographic head predicted 39% male where the audited share was 75%. Prior-shift reweighting corrects the classifier's output probabilities for the difference between training-set class priors and the priors observed in stores.
+
+TODO: add the post-correction agreement with the manual audit.
+
+### Excluding staff without losing customers
+
+Majority voting over noisy per-frame customer/employee predictions discarded about 18% of genuine entrants as employees. Employee exclusion now requires sustained high-confidence employee evidence across a track before a person is removed from customer counts.
+
+A related threshold change lowered detector confidence from 0.45 to 0.30, after validation on store footage showed that the lower threshold recovered backlit doorway detections.
+
+TODO: add the measured share of genuine entrants lost after the change.

@@ -104,10 +104,6 @@ export const skills: SkillGroup[] = [
     ],
   },
   {
-    group: 'Frontend and data',
-    items: ['React', 'Vite', 'Tailwind', 'sql.js', 'PocketBase', 'Recharts', 'data dashboards'],
-  },
-  {
     group: 'Real-time 3D',
     items: [
       'Unity',

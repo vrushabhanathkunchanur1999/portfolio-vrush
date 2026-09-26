@@ -1,0 +1,22 @@
+---
+// Visible FAQ. The FAQPage JSON-LD in phase 7 is built from the same array, so the two cannot drift.
+interface Props {
+  faqs: { q: string; a: string }[];
+}
+
+const { faqs } = Astro.props;
+---
+
+<section aria-labelledby="faq">
+  <h2 id="faq">Frequently asked questions</h2>
+  <div class="mt-6 grid gap-6">
+    {
+      faqs.map((f) => (
+        <div>
+          <h3>{f.q}</h3>
+          <p class="mt-2">{f.a}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>

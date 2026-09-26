@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import ProjectLayout from '@/layouts/ProjectLayout.astro';
+import { getSortedProjects } from '@/lib/content';
+
+export const getStaticPaths = (async () => {
+  const projects = await getSortedProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<ProjectLayout project={project}>
+  <Content />
+</ProjectLayout>

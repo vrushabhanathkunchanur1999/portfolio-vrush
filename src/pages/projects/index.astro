@@ -1,0 +1,55 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import ProjectFilter from '@/components/ProjectFilter.astro';
+import { getSortedProjects } from '@/lib/content';
+
+const categories = [
+  { id: 'production', label: 'Production' },
+  { id: 'personal', label: 'Personal' },
+  { id: 'in-progress', label: 'In progress' },
+] as const;
+
+const projects = await getSortedProjects();
+// Empty categories render nothing: no heading, no filter chip.
+const groups = categories
+  .map((c) => ({ ...c, projects: projects.filter((p) => p.data.category === c.id) }))
+  .filter((g) => g.projects.length > 0);
+---
+
+<BaseLayout
+  title="Projects: production computer vision systems"
+  description="Case studies of computer vision systems in production: on-device retail analytics in 400+ stores and a 4-station factory visual inspection line."
+>
+  <div class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Projects', href: '/projects' },
+        ]}
+      />
+      <h1 class="mt-6">Projects</h1>
+      <p class="measure mt-3 text-lg">
+        Systems I have trained, built and put into production, each written up with its
+        constraints, the hard problems and the measured results.
+      </p>
+
+      {groups.length > 1 && <ProjectFilter groups={groups.map((g) => ({ id: g.id, label: g.label }))} />}
+
+      {
+        groups.map((g) => (
+          <section aria-labelledby={`cat-${g.id}`} class="mt-12" data-category={g.id}>
+            <h2 id={`cat-${g.id}`}>{g.label}</h2>
+            <div class="mt-6 grid gap-12">
+              {g.projects.map((project) => (
+                <ProjectCard project={project} />
+              ))}
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

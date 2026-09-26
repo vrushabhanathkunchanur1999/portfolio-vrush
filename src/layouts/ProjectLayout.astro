@@ -1,0 +1,163 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Faq from '@/components/Faq.astro';
+import MetricsTable from '@/components/MetricsTable.astro';
+import { getPublishedPosts, getSortedProjects } from '@/lib/content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const d = project.data;
+
+const statusLabel = {
+  live: 'Live in production',
+  shipped: 'Shipped',
+  building: 'In progress',
+  archived: 'Archived',
+} as const;
+
+const updated = d.updatedAt ?? d.publishedAt;
+const dateFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeZone: 'UTC' });
+
+const relatedPosts = (await getPublishedPosts()).filter(
+  (post) =>
+    post.data.relatedProjects?.includes(project.id) || d.relatedPosts?.includes(post.id),
+);
+const otherProjects = (await getSortedProjects()).filter((p) => p.id !== project.id);
+
+const facts: { label: string; value: string }[] = [
+  { label: 'Role', value: d.role },
+  ...(d.org ? [{ label: 'Organisation', value: d.org }] : []),
+  { label: 'Period', value: d.period },
+  ...(d.scale ? [{ label: 'Scale', value: d.scale }] : []),
+  { label: 'Status', value: statusLabel[d.status] },
+  { label: 'Stack', value: d.stack.join(', ') },
+  ...(d.hardware ? [{ label: 'Hardware', value: d.hardware.join(', ') }] : []),
+];
+---
+
+<BaseLayout title={d.metaTitle} description={d.metaDescription}>
+  <article class="sheet py-10 md:py-14">
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Projects', href: '/projects' },
+          { label: d.title, href: `/projects/${project.id}` },
+        ]}
+      />
+
+      <h1 class="mt-6">{d.title}</h1>
+      <p class="measure mt-3 text-lg">{d.oneLiner}</p>
+
+      <dl class="facts mt-8">
+        {
+          facts.map((f) => (
+            <div>
+              <dt>{f.label}</dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))
+        }
+        <div>
+          <dt>Last updated</dt>
+          <dd><time datetime={updated.toISOString().slice(0, 10)}>{dateFormat.format(updated)}</time></dd>
+        </div>
+      </dl>
+
+      {
+        d.confidential ? (
+          <p class="measure mt-6 text-graphite">
+            The code and imagery belong to the client. Architecture and results are described at a
+            level cleared for discussion.
+          </p>
+        ) : (
+          (d.repo || d.demo) && (
+            <p class="mt-6 flex flex-wrap gap-x-6">
+              {d.repo && <a class="tap" href={d.repo}>Source code</a>}
+              {d.demo && <a class="tap" href={d.demo}>Live demo</a>}
+            </p>
+          )
+        )
+      }
+
+      <div class="prose mt-4">
+        <slot />
+      </div>
+
+      <section aria-labelledby="results" class="mt-12">
+        <h2 id="results">Results</h2>
+        <div class="mt-4">
+          <MetricsTable caption={`Measured results for ${d.title}`} outcomes={d.outcomes} />
+        </div>
+      </section>
+
+      {
+        d.lessons && (
+          <section aria-labelledby="differently" class="measure mt-12">
+            <h2 id="differently">What I'd do differently</h2>
+            <ul class="mt-4 grid list-disc gap-2 pl-6">
+              {d.lessons.map((l) => <li>{l}</li>)}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        d.faqs && (
+          <div class="measure mt-12">
+            <Faq faqs={d.faqs} />
+          </div>
+        )
+      }
+
+      <section aria-labelledby="related" class="mt-12 border-t border-rule pt-8">
+        <h2 id="related" class="text-lg [font-stretch:100%]">Related</h2>
+        <ul class="mt-3 grid gap-1" role="list">
+          {
+            relatedPosts.map((post) => (
+              <li>
+                <a class="tap" href={`/blog/${post.id}`}>{post.data.title}</a>
+              </li>
+            ))
+          }
+          {
+            otherProjects.map((p) => (
+              <li>
+                <a class="tap" href={`/projects/${p.id}`}>{p.data.title} case study</a>
+              </li>
+            ))
+          }
+          <li><a class="tap" href="/projects">All projects</a></li>
+        </ul>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .facts > div {
+    display: grid;
+    gap: 0 1.5rem;
+    padding-block: 0.4rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts > div:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dt {
+    color: var(--graphite);
+  }
+
+  @media (min-width: 40rem) {
+    .facts > div {
+      grid-template-columns: 10rem minmax(0, 1fr);
+    }
+  }
+</style>

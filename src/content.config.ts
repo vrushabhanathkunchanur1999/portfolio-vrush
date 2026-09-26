@@ -10,6 +10,8 @@ const projects = defineCollection({
     z
       .object({
         title: z.string().min(1),
+        metaTitle: z.string().min(1).max(60),
+        metaDescription: z.string().min(140).max(160),
         oneLiner: z.string().min(1).max(120),
         category: z.enum(['production', 'personal', 'in-progress']),
         role: z.string().min(1),
@@ -29,6 +31,7 @@ const projects = defineCollection({
         confidential: z.boolean(),
         featured: z.boolean(),
         order: z.number().int(),
+        lessons: z.array(z.string().min(1)).optional(),
         faqs: z.array(faq).optional(),
         relatedPosts: z.array(z.string()).optional(),
         publishedAt: z.coerce.date(),
