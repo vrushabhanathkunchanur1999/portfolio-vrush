@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Type check (astro check), static build and _headers generation. Content schema
+      # violations and out-of-range titles or descriptions fail here.
+      - run: pnpm build
+
+      # Internal links, headings, canonical/OG tags, JSON-LD @id references, glued text
+      # and the copy rules from CONTENT-GUIDE.md.
+      - run: pnpm check:site

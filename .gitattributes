@@ -1,0 +1,6 @@
+# Normalise to LF so CI and Cloudflare (Linux) build the same bytes as a Windows checkout.
+* text=auto eol=lf
+*.png binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

@@ -9,9 +9,10 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
     "check": "astro check",
+    "check:site": "node scripts/check-site.mjs",
     "astro": "astro"
   },
   "dependencies": {

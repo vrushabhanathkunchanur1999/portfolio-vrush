@@ -1,0 +1,3 @@
+# Cloudflare Pages redirects: one rule per line, "<from> <to> <status>".
+# Published URLs are permanent. If a slug ever has to change, add a 301 here, for example:
+#   /projects/old-slug /projects/new-slug 301
