@@ -1,10 +1,12 @@
 @import 'tailwindcss';
 
+/* Archivo is instanced to the ranges the site uses (weight 400-800, width 75-100%) and subset
+   to Latin-1 plus general punctuation. Re-subset if a page needs other weights or characters. */
 @font-face {
   font-family: 'Archivo';
   src: url('/fonts/archivo-latin-wdth-normal.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
+  font-weight: 400 800;
+  font-stretch: 75% 100%;
   font-style: normal;
   font-display: swap;
 }
@@ -12,8 +14,8 @@
 @font-face {
   font-family: 'Archivo';
   src: url('/fonts/archivo-latin-wdth-italic.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
+  font-weight: 400 800;
+  font-stretch: 75% 100%;
   font-style: italic;
   font-display: swap;
 }
@@ -332,8 +334,11 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    /* Delays too: a delayed animation with fill-mode both sits at its first keyframe until it starts. */
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

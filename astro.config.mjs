@@ -14,10 +14,14 @@ export default defineConfig({
   trailingSlash: 'never',
   build: {
     format: 'file',
+    // The stylesheet is small; inlining it removes the render-blocking request that held LCP
+    // above 1.5s on simulated mobile.
+    inlineStylesheets: 'always',
   },
   markdown: {
     shikiConfig: {
-      themes: { light: 'github-light', dark: 'github-dark' },
+      // The *-default variants keep comment tokens above 4.5:1; plain github-dark does not.
+      themes: { light: 'github-light-default', dark: 'github-dark-default' },
     },
   },
   integrations: [

@@ -1,7 +1,7 @@
 ---
 title: Why your ONNX model gets slower on a Raspberry Pi, and what to do about it
 metaTitle: Why ONNX models get slower on a Raspberry Pi
-description: An ONNX model that is fast on a laptop often slows down on a Raspberry Pi. Runtime, precision, input size and Python glue code all cost time. What to change.
+description: An ONNX model that is fast on a laptop often slows down on a Raspberry Pi, because the runtime, precision, input size and Python glue code all cost time.
 question: why is my onnx model slow on raspberry pi
 answer: On a Raspberry Pi, latency comes from the inference runtime, the numeric precision, the input resolution and the Python code around the model, not only the model itself. In a production retail deployment on Raspberry Pi 5, moving to NCNN at FP16 with a 352×352 input and NumPy pre- and post-processing cut inference latency by 35%.
 publishedAt: 2026-09-26
