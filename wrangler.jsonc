@@ -3,7 +3,7 @@
 // endpoint needs sharp and node:fs, which do not run in workerd).
 {
   // Must match the Worker's name in the Cloudflare dashboard.
-  "name": "portfolio-vrush",
+  "name": "portfolio",
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./dist",
