@@ -5,7 +5,6 @@ metaDescription: A 4-station visual inspection system on an electronics line, wi
 oneLiner: Pass/fail visual inspection on an electronics manufacturing line, across 4 stations and three product variants.
 category: production
 role: Software Engineer; trained the models, built the inference service and commissioned the stations
-org: Xenvis Solutions
 period: Jan 2025 – present
 status: live
 scale: 4 stations, 1,400+ units inspected per day, 1 year in production
@@ -51,6 +50,8 @@ faqs:
 publishedAt: 2026-09-26
 ---
 
+import PipelineDiagram from '@/components/PipelineDiagram.astro';
+
 ## Context
 
 An electronics manufacturer needed every unit on its line checked for correct component placement, visible defects and seal quality, with a pass/fail verdict per unit. Automated Visual Inspection runs on 4 stations, covers three product variants, inspects 1,400+ units per day, and has been in production for 1 year.
@@ -71,11 +72,16 @@ Component and defect detection uses YOLOX-S and YOLOX-M detectors trained on 2,5
 
 The seal pipeline in OpenCV runs these stages in order:
 
-1. **Mean-shift colour quantisation** to reduce the image to a small set of colours.
-2. **HSV segmentation**, separating the seal by hue, saturation and value.
-3. **Homography alignment** of the part to a fixed reference frame.
-4. **Batched ONNX classification** of 36 rim ROIs (regions of interest) with the seal-anomaly classifier. ONNX is the Open Neural Network Exchange model format.
-5. **Consecutive-failure aggregation**, which judges the seal on runs of consecutive failing ROIs around the rim rather than on any single ROI.
+<PipelineDiagram
+  caption="The seal pipeline: five stages from raw frame to a per-unit seal verdict."
+  steps={[
+    { label: 'Colour quantisation', detail: 'Mean-shift, reduces the image to a small set of colours' },
+    { label: 'HSV segmentation', detail: 'Separates the seal by hue, saturation, value' },
+    { label: 'Homography alignment', detail: 'Warps the part to a fixed reference frame' },
+    { label: 'ONNX classification', detail: '36 rim ROIs, batched through the seal-anomaly classifier (ONNX: Open Neural Network Exchange)' },
+    { label: 'Failure aggregation', detail: 'Verdict from consecutive failing ROIs around the rim, not any single ROI' },
+  ]}
+/>
 
 The seal-anomaly classifier reaches 94% precision and 96% recall at the deployed threshold.
 

@@ -146,7 +146,7 @@ export interface Role {
 export const experience: Role[] = [
   {
     role: 'Software Engineer',
-    org: 'Xenvis Solutions',
+    org: 'Confidential (client NDA)',
     location: 'Bengaluru, India',
     start: { iso: '2025-01', label: 'Jan 2025' },
     end: null,

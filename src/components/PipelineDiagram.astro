@@ -1,0 +1,106 @@
+---
+interface Step {
+  label: string;
+  detail?: string;
+}
+
+interface Props {
+  caption: string;
+  steps: Step[];
+}
+
+const { caption, steps } = Astro.props;
+---
+
+<figure class="pipeline">
+  <ol class="pipeline-steps" role="list">
+    {
+      steps.map((s, i) => (
+        <li class="pipeline-step">
+          <div class="pipeline-box">
+            <span class="pipeline-index">{String(i + 1).padStart(2, '0')}</span>
+            <p class="pipeline-label">{s.label}</p>
+            {s.detail && <p class="pipeline-detail">{s.detail}</p>}
+          </div>
+          {i < steps.length - 1 && (
+            <span class="pipeline-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path
+                  d="M2 12h18M14 5l7 7-7 7"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption class="mt-3 text-graphite">{caption}</figcaption>
+</figure>
+
+<style>
+  .pipeline-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .pipeline-box {
+    position: relative;
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--ink);
+  }
+
+  .pipeline-index {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--dimension);
+  }
+
+  .pipeline-label {
+    margin-top: 0.15rem;
+    font-weight: 700;
+  }
+
+  .pipeline-detail {
+    margin-top: 0.15rem;
+    color: var(--graphite);
+    font-size: var(--text-sm);
+  }
+
+  .pipeline-arrow {
+    flex-shrink: 0;
+    color: var(--dimension);
+    align-self: center;
+    transform: rotate(90deg);
+  }
+
+  @media (min-width: 48rem) {
+    .pipeline-steps {
+      flex-direction: row;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .pipeline-step {
+      flex: 1 1 12rem;
+    }
+
+    .pipeline-arrow {
+      transform: none;
+    }
+  }
+</style>

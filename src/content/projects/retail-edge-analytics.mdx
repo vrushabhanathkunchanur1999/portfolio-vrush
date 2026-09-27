@@ -5,7 +5,6 @@ metaDescription: How a YOLOX-S detector and a MobileNetV3 classifier run six rea
 oneLiner: On-device store analytics on Raspberry Pi 5, with person detection, tracking and six real-time KPIs.
 category: production
 role: Software Engineer; trained the models and built the edge pipeline and data layer
-org: Xenvis Solutions
 period: Jan 2025 – present
 status: live
 scale: 400+ stores live, grown from 40+ pilots, with a 700-store rollout under contract
@@ -64,6 +63,8 @@ faqs:
 publishedAt: 2026-09-26
 ---
 
+import PipelineDiagram from '@/components/PipelineDiagram.astro';
+
 ## Context
 
 Store operators wanted to know how many people came in, how they moved, and how trial rooms, billing counters and greeting zones were used, measured from the store's own camera feeds. Retail Edge Analytics computes six KPIs (key performance indicators) on a Raspberry Pi 5 inside each store. The system started as 40+ pilot deployments, is live in 400+ stores, and has a 700-store rollout under contract.
@@ -82,13 +83,18 @@ With 400+ devices in the field, the data on each device has to survive a device 
 
 The pipeline for each camera runs these stages in order:
 
-1. **Frame input.** One RTSP feed per camera.
-2. **Pre-processing in NumPy.** A centred letterbox resize to 352×352, then the space-to-depth Focus stem that YOLOX expects at its input.
-3. **Person detection.** A YOLOX-S detector trained on 25,000 annotated store-camera frames, running in NCNN (Tencent's neural network inference framework for ARM and mobile CPUs) at FP16, meaning 16-bit floating point. The detector reaches 0.90 mAP@0.5 (mean average precision at 0.5 intersection over union) on held-out store footage.
-4. **Post-processing in NumPy.** Raw-head grid decode, then NMS (non-maximum suppression) to remove duplicate boxes.
-5. **Tracking.** Norfair and ByteTrack multi-object tracking assign each person a persistent track.
-6. **Crop classification.** A MobileNetV3-Small classifier with two heads, one demographic and one customer/employee, reaching 92% accuracy on held-out footage.
-7. **KPIs.** Six KPI modules read the shared detections, tracks and classifications for that camera.
+<PipelineDiagram
+  caption="The per-camera pipeline: one RTSP feed in, six shared KPIs out."
+  steps={[
+    { label: 'Frame input', detail: 'One RTSP feed per camera' },
+    { label: 'Pre-processing', detail: 'NumPy: letterbox resize to 352x352, Focus stem' },
+    { label: 'Person detection', detail: 'YOLOX-S in NCNN at FP16, 0.90 mAP@0.5' },
+    { label: 'Post-processing', detail: 'NumPy: raw-head decode, then NMS' },
+    { label: 'Tracking', detail: 'Norfair and ByteTrack, persistent per-person tracks' },
+    { label: 'Crop classification', detail: 'MobileNetV3-Small, demographic + customer/employee heads' },
+    { label: 'KPIs', detail: 'Six KPI modules share one set of detections and tracks' },
+  ]}
+/>
 
 Detection and classification run once per RTSP feed, and every KPI on that camera reuses the results. Movement heatmaps add to each cell of a normalised grid at most once per track.
 
