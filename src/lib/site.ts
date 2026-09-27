@@ -2,8 +2,8 @@
 // feed reads from here so the entity stays byte-identical across the site.
 
 export const site = {
-  // TODO_DOMAIN: replace with the real domain once bought. The workers.dev URL works until then.
-  url: 'https://portfolio.vrushabhanathkunchanur1999.workers.dev',
+  // TODO_DOMAIN: replace with the real domain once bought. The github.io URL works until then.
+  url: 'https://vrushabhkunchanur.github.io',
   name: 'Vrushabh Kunchanur',
   jobTitle: 'AI Engineer',
   title: 'Vrushabh Kunchanur, AI Engineer',
@@ -21,7 +21,7 @@ export const site = {
   availability: 'Open to full-time roles and consulting on computer vision and edge ML deployment.',
   socials: {
     linkedin: 'https://www.linkedin.com/in/vrushabhanath-kunchanur-216379146/',
-    github: 'https://github.com/vrushabhanathkunchanur1999',
+    github: 'https://github.com/vrushabhkunchanur',
   },
   locale: 'en',
 } as const;

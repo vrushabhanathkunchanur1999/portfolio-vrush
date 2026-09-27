@@ -74,3 +74,32 @@ writeFileSync(join(DIST, '_headers'), headers);
 console.log(
   `postbuild: wrote ${relative('.', join(DIST, '_headers'))} with ${hashes.size} script hashes`,
 );
+
+// GitHub Pages serves plain static files with no way to set response headers, so the _headers
+// file above only takes effect if the site is ever fronted by Cloudflare again. As a fallback,
+// inject the header-equivalent <meta> tags directly into each page. This is a strictly weaker
+// substitute: meta CSP silently ignores frame-ancestors, so clickjacking protection (that
+// directive and X-Frame-Options, which has no meta form at all) is not replicated by this and
+// is simply absent when the site is served as plain static files.
+const metaCsp = [
+  "default-src 'self'",
+  `script-src 'self' ${[...hashes].sort().join(' ')} ${ANALYTICS_SCRIPT}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  `connect-src 'self' ${ANALYTICS_CONNECT}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  'upgrade-insecure-requests',
+].join('; ');
+
+for (const file of htmlFiles(DIST)) {
+  const html = readFileSync(file, 'utf8');
+  const withMeta = html.replace(
+    '<meta charset="utf-8">',
+    `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${metaCsp}"><meta name="referrer" content="strict-origin-when-cross-origin">`,
+  );
+  if (withMeta !== html) writeFileSync(file, withMeta);
+}
+console.log('postbuild: inlined CSP and referrer <meta> tags for static hosting without headers');
