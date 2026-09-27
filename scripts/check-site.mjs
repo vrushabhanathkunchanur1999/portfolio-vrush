@@ -54,7 +54,9 @@ for (const file of files(DIST, '.html')) {
     if (i > 0 && l > (levels[i - 1] ?? 0) + 1) fail(rel, `heading jumps from h${levels[i - 1]} to h${l}`);
   });
 
-  if (!/<link rel="canonical" href="https:\/\//.test(html)) fail(rel, 'missing absolute canonical');
+  const canonical = /<link rel="canonical" href="(https:\/\/[^"]+)"/.exec(html)?.[1];
+  if (!canonical) fail(rel, 'missing absolute canonical');
+  else if (/\/index$|\.html$/.test(canonical)) fail(rel, `canonical is not a clean URL: ${canonical}`);
   const og = /<meta property="og:image" content="https?:\/\/[^/]+(\/[^"]+)"/.exec(html)?.[1];
   if (!og || !resolves(og)) fail(rel, `og:image missing or not built (${og})`);
 

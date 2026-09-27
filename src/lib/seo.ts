@@ -23,5 +23,7 @@ export function assertMeta(path: string, title: string, description: string): vo
 }
 
 export function canonicalUrl(pathname: string): string {
-  return absoluteUrl(pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/');
+  // With build.format 'file' the home page's pathname can arrive as /index.html.
+  const clean = pathname.replace(/\.html$/, '').replace(/(^|\/)index$/, '$1').replace(/\/$/, '');
+  return absoluteUrl(clean || '/');
 }
