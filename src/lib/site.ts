@@ -2,8 +2,8 @@
 // feed reads from here so the entity stays byte-identical across the site.
 
 export const site = {
-  // TODO_DOMAIN: replace with the real domain once bought. The *.pages.dev URL works until then.
-  url: 'https://vrushabh-kunchanur.pages.dev',
+  // TODO_DOMAIN: replace with the real domain once bought. The workers.dev URL works until then.
+  url: 'https://portfolio.vrushabhanathkunchanur1999.workers.dev',
   name: 'Vrushabh Kunchanur',
   jobTitle: 'AI Engineer',
   title: 'Vrushabh Kunchanur, AI Engineer',

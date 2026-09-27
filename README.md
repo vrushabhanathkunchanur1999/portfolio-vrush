@@ -82,7 +82,18 @@ Measured on the device: ...
 
 A tag gets an archive page at `/blog/tag/<tag>` once two published posts carry it.
 
-## Deploy: Cloudflare Pages
+## Deploy: Cloudflare Workers (current setup)
+
+The live site is a Worker named `portfolio`, serving `dist/` as static assets at
+https://portfolio.vrushabhanathkunchanur1999.workers.dev. In the Worker's build settings:
+build command `pnpm build`, deploy command `npx wrangler deploy`, variable `NODE_VERSION=22`.
+
+Keep `wrangler.jsonc` in the repo. Without it, `wrangler deploy` auto-configures Astro with the
+Cloudflare adapter, which prerenders inside workerd, and the build fails because the OG image
+endpoint needs `sharp` and `node:fs`. Workers static assets read the same `_headers` and
+`_redirects` files as Pages.
+
+## Alternative: Cloudflare Pages
 
 1. In the Cloudflare dashboard, go to Workers & Pages, choose Create, then Pages, and connect
    the GitHub repository.
