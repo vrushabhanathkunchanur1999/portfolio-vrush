@@ -1,0 +1,14 @@
+// Static-assets-only Worker. With this file present, Wrangler deploys dist/ as plain files and
+// does not auto-configure Astro with the Cloudflare adapter (which broke the build: the OG image
+// endpoint needs sharp and node:fs, which do not run in workerd).
+{
+  // Must match the Worker's name in the Cloudflare dashboard.
+  "name": "portfolio-vrush",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Serves /about from about.html, matching how the site links pages.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
