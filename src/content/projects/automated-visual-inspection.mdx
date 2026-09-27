@@ -51,6 +51,7 @@ publishedAt: 2026-09-26
 ---
 
 import PipelineDiagram from '@/components/PipelineDiagram.astro';
+import CompareDiagram from '@/components/CompareDiagram.astro';
 
 ## Context
 
@@ -67,6 +68,16 @@ Training data came from production: 2,500 annotated images across 6 component an
 ## What I built
 
 The inference service is a GPU-backed Flask application, containerised with Docker on CUDA 12.8. The service routes each of the three product variants to a dedicated pipeline, loads all models once at startup, and holds median latency at 1,200 ms per unit.
+
+<PipelineDiagram
+  caption="System overview: one unit in, one verdict out, at 1,200 ms median."
+  steps={[
+    { label: 'Unit on the line', detail: 'Camera captures a frame per station' },
+    { label: 'Inference service', detail: 'Dockerised Flask on CUDA 12.8, routed by product variant' },
+    { label: 'Detection', detail: 'YOLOX component/defect detector plus the OpenCV seal pipeline' },
+    { label: 'Verdict', detail: 'Pass/fail decision with an annotated image' },
+  ]}
+/>
 
 Component and defect detection uses YOLOX-S and YOLOX-M detectors trained on 2,500 annotated production images across 6 classes, reaching 0.96 mAP@0.5 (mean average precision at 0.5 intersection over union).
 
@@ -92,6 +103,28 @@ The seal-anomaly classifier reaches 94% precision and 96% recall at the deployed
 Misalignment could place the rim ROIs on background instead of on the seal. The classifier then saw no seal defect in those ROIs, and the unit passed. The failure mode was systematic rather than random.
 
 The fix added pixel-ratio and ROI-coverage gates, which reject ROIs that do not sit on the seal, plus a geometric seating check built on connected components, min-area-rect fitting and a distance transform. All thresholds were calibrated on labelled OK and NOK (not OK) samples. Together, the gates and the seating check eliminated the false-pass mode.
+
+<CompareDiagram
+  caption="The fix rejects a misaligned ROI before it ever reaches the classifier."
+  before={{
+    label: 'Before: misalignment passes',
+    tone: 'problem',
+    points: [
+      'ROIs land partly or fully on background',
+      'Classifier sees no defect in an empty ROI',
+      'Unit gets a false pass',
+    ],
+  }}
+  after={{
+    label: 'After: gated and checked',
+    tone: 'fix',
+    points: [
+      'Pixel-ratio and ROI-coverage gates reject off-seal ROIs',
+      'Geometric seating check confirms the ring is where expected',
+      'Thresholds calibrated on labelled OK/NOK samples',
+    ],
+  }}
+/>
 
 ### Commissioning four stations on the plant floor
 

@@ -1,0 +1,71 @@
+---
+interface Panel {
+  label: string;
+  tone: 'problem' | 'fix';
+  points: string[];
+}
+
+interface Props {
+  caption: string;
+  before: Panel;
+  after: Panel;
+}
+
+const { caption, before, after } = Astro.props;
+const panels = [before, after];
+---
+
+<figure class="compare">
+  <div class="compare-grid">
+    {
+      panels.map((p) => (
+        <div class={`compare-panel compare-panel--${p.tone}`}>
+          <p class="compare-label">{p.label}</p>
+          <ul class="mt-2 grid gap-1.5" role="list">
+            {p.points.map((point) => (
+              <li>{point}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+  <figcaption class="mt-3 text-graphite">{caption}</figcaption>
+</figure>
+
+<style>
+  .compare-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .compare-panel {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--rule);
+    font-size: var(--text-sm);
+  }
+
+  .compare-panel--fix {
+    border-color: var(--dimension);
+  }
+
+  .compare-label {
+    font-weight: 700;
+    font-size: var(--text-base);
+  }
+
+  .compare-panel--fix .compare-label {
+    color: var(--dimension);
+  }
+
+  .compare-panel ul {
+    list-style: none;
+    color: var(--graphite);
+  }
+
+  @media (min-width: 40rem) {
+    .compare-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
